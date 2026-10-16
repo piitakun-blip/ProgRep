@@ -1,848 +1,921 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Caseload IEP Progress Report Generator</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #f4f6f9;
-      color: #333;
-      margin: 0;
-      padding: 20px;
-    }
-    .container {
-      max-width: 1000px;
-      margin: 0 auto;
-      background: #ffffff;
-      padding: 30px;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    }
-    h1 {
-      color: #1f4e78;
-      margin-top: 0;
-      border-bottom: 2px solid #1f4e78;
-      padding-bottom: 10px;
-    }
-    .target-settings-panel {
-      background: #eef3f8;
-      border: 2px solid #1f4e78;
-      padding: 20px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-    }
-    .target-settings-title {
-      font-weight: bold;
-      color: #1f4e78;
-      font-size: 1.1em;
-      margin-bottom: 12px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .settings-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 15px;
-    }
-    .input-group {
-      display: flex;
-      flex-direction: column;
-    }
-    .input-group label {
-      font-weight: bold;
-      margin-bottom: 5px;
-      font-size: 0.88em;
-      color: #1f4e78;
-    }
-    .input-group input, .input-group select {
-      padding: 9px 12px;
-      border: 1px solid #1f4e78;
-      border-radius: 4px;
-      font-size: 0.95em;
-      background: #ffffff;
-      font-weight: bold;
-      color: #1f4e78;
-    }
-    .upload-box {
-      background: #f8fafc;
-      border: 3px dashed #1f4e78;
-      padding: 35px;
-      border-radius: 8px;
-      text-align: center;
-      margin-bottom: 25px;
-      transition: background 0.2s, border-color 0.2s;
-    }
-    .upload-box.dragover {
-      background: #d9e1f2;
-      border-color: #153450;
-    }
-    .upload-box input[type="file"] { display: none; }
-    .upload-btn {
-      background-color: #1f4e78;
-      color: white;
-      padding: 12px 26px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-weight: bold;
-      display: inline-block;
-      margin-top: 12px;
-      font-size: 1em;
-    }
-    .upload-btn:hover { background-color: #153450; }
-    .status-msg { margin-top: 15px; font-size: 1em; font-weight: bold; }
-    
-    .roster-bar {
-      background: #d9e1f2;
-      padding: 15px;
-      border-radius: 6px;
-      margin-bottom: 20px;
-      display: flex;
-      align-items: center;
-      gap: 15px;
-      border: 1px solid #b4c6e7;
-    }
-    .roster-bar label {
-      font-weight: bold;
-      color: #1f4e78;
-      font-size: 1em;
-    }
-    .roster-bar select {
-      flex: 1;
-      padding: 8px 12px;
-      border-radius: 4px;
-      border: 1px solid #1f4e78;
-      font-size: 1em;
-      font-weight: bold;
-      color: #1f4e78;
-      background: #ffffff;
-    }
-
-    .setup-panel {
-      background: #fafafa;
-      border: 1px solid #e0e0e0;
-      padding: 15px;
-      border-radius: 6px;
-      margin-bottom: 25px;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 15px;
-    }
-
-    .goal-card {
-      background: #ffffff;
-      border: 1px solid #dcdcdc;
-      border-left: 5px solid #1f4e78;
-      border-radius: 6px;
-      margin-bottom: 25px;
-      padding: 20px;
-    }
-    .goal-header {
-      font-weight: bold;
-      color: #1f4e78;
-      font-size: 1.05em;
-      margin-bottom: 12px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .timeline-box {
-      background: #eef2f7;
-      border: 1px solid #d0dbe5;
-      border-radius: 4px;
-      padding: 10px 12px;
-      font-size: 0.85em;
-      margin-bottom: 15px;
-      color: #2c3e50;
-    }
-    .timeline-title { font-weight: bold; color: #1f4e78; margin-bottom: 4px; }
-    .grid-2 {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 12px;
-      margin-bottom: 15px;
-    }
-    .copy-box {
-      background: #f8f9fa;
-      border: 1px solid #e0e0e0;
-      padding: 12px;
-      border-radius: 4px;
-      font-family: Calibri, sans-serif;
-      font-size: 1em;
-      line-height: 1.5;
-      white-space: pre-wrap;
-      color: #262626;
-      margin-top: 10px;
-    }
-    .copy-btn, .action-btn {
-      background-color: #1f4e78;
-      color: white;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 0.85em;
-      font-weight: bold;
-      transition: background 0.2s;
-    }
-    .action-btn.export-all { background-color: #28a745; margin-right: 10px; }
-    .action-btn.add-custom { background-color: #17a2b8; }
-    .copy-btn:hover { background-color: #153450; }
-    .action-btn.export-all:hover { background-color: #218838; }
-    .action-btn.add-custom:hover { background-color: #138496; }
-    .copy-btn.copied { background-color: #28a745; }
-    .badge {
-      font-size: 0.8em;
-      padding: 3px 8px;
-      border-radius: 12px;
-      background: #d9e1f2;
-      color: #1f4e78;
-      font-weight: bold;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IEP Progress Predictor</title>
+<style>
+:root {
+  font-family: system-ui, Arial, sans-serif;
+  color: #18263a;
+  background: #f3f6fa;
+}
+* { box-sizing: border-box; }
+body { margin: 0; }
+header {
+  background: #12355b;
+  color: white;
+  padding: 25px 5%;
+}
+header h1 { margin: 0 0 8px; }
+header p { margin: 0; color: #d8e5f4; }
+main {
+  max-width: 1100px;
+  margin: 24px auto;
+  padding: 0 18px 40px;
+}
+.panel {
+  background: white;
+  border: 1px solid #dce5ef;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 18px;
+}
+h2 { font-size: 20px; margin-top: 0; }
+h3 { font-size: 17px; }
+.muted { color: #617184; font-size: 14px; }
+.controls {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.controls label { flex: 1; min-width: 190px; }
+label { display: block; font-weight: 600; }
+select, input[type=file], textarea {
+  width: 100%;
+  padding: 10px;
+  margin-top: 7px;
+  font: inherit;
+  border: 1px solid #bac9d9;
+  border-radius: 8px;
+}
+button {
+  background: #1559a1;
+  color: white;
+  border: 0;
+  border-radius: 8px;
+  padding: 10px 14px;
+  cursor: pointer;
+  font-weight: 600;
+}
+button:hover { background: #0d467f; }
+.secondary { background: #e4edf7; color: #174c80; }
+.danger { background: #fff0ed; color: #9e3129; }
+.goal {
+  border: 1px solid #d4e0ec;
+  border-radius: 10px;
+  padding: 18px;
+  margin-top: 15px;
+}
+.goaltext {
+  white-space: pre-wrap;
+  background: #f6f8fb;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.prediction {
+  background: #f1f6fc;
+  border-left: 4px solid #286aab;
+  padding: 12px;
+  border-radius: 6px;
+  margin-top: 14px;
+}
+textarea {
+  min-height: 145px;
+  resize: vertical;
+  line-height: 1.5;
+}
+.tag {
+  display: inline-block;
+  background: #e4edf7;
+  color: #174c80;
+  padding: 4px 8px;
+  border-radius: 5px;
+  font-size: 12px;
+}
+.warn { background: #fff1d6; color: #8c5703; }
+.row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+.note {
+  background: #fff8e9;
+  border-left: 4px solid #dc9b30;
+  padding: 12px;
+  border-radius: 6px;
+  font-size: 14px;
+}
+details { padding: 8px 0; }
+summary { cursor: pointer; font-weight: 600; }
+.history p { white-space: pre-wrap; font-size: 14px; }
+.empty {
+  padding: 25px;
+  text-align: center;
+  color: #617184;
+}
+#filelist { margin-top: 12px; }
+.filechip {
+  display: inline-block;
+  background: #edf3f9;
+  padding: 7px 10px;
+  border-radius: 8px;
+  margin: 4px;
+  font-size: 13px;
+}
+@media(max-width:600px) {
+  .controls { display: block; }
+  .controls label { margin-bottom: 12px; }
+}
+</style>
 </head>
 <body>
 
-<div class="container">
-  <h1>Caseload IEP Progress Report Generator</h1>
+<header>
+  <h1>IEP Progress Predictor</h1>
+  <p>Historical progress analysis and editable quarterly drafts</p>
+</header>
 
-  <!-- PRE-UPLOAD TARGET SETTINGS PANEL -->
-  <div class="target-settings-panel">
-    <div class="target-settings-title">⚙️ Step 1: Select Target Reporting Period & Year (Before Upload)</div>
-    <div class="settings-grid">
-      <div class="input-group">
-        <label for="reportingPeriod">Target Reporting Period</label>
-        <select id="reportingPeriod" onchange="handleGlobalSettingsChange()">
-          <option value="P1">P1 (Quarter 1)</option>
-          <option value="P2">P2 (Quarter 2)</option>
-          <option value="P3">P3 (Quarter 3)</option>
-          <option value="P4" selected>P4 (Quarter 4 - Cumulative)</option>
-        </select>
-      </div>
-      <div class="input-group">
-        <label for="schoolYear">Target School Year</label>
-        <input type="text" id="schoolYear" value="2025-2026" oninput="handleGlobalSettingsChange()">
-      </div>
-    </div>
+<main>
+
+<section class="panel">
+  <h2>1. Upload Cumulative Progress Reports</h2>
+  <p class="muted">
+    Upload one or more CSV files from different school years.
+    Files are processed locally in your browser.
+  </p>
+  <input type="file" id="files" accept=".csv" multiple>
+  <div class="row">
+    <button id="import">Import CSV Files</button>
+    <button id="clear" class="danger">Clear Data</button>
   </div>
+  <div id="filelist"></div>
+  <p id="importStatus" class="muted"></p>
+</section>
 
-  <!-- STEP 2: UPLOAD ZONE -->
-  <div class="upload-box" id="dropZone">
-    <strong style="font-size:1.2em; color:#1f4e78;">📁 Step 2: Upload Caseload Cumulative File (CSV)</strong><br>
-    <span style="font-size:0.95em; color:#555; display:inline-block; margin-top:6px;">
-      Drag & drop <code>25-26 cumulative.csv</code> or any CSV file here, or click the button below.
-    </span><br>
-    <label for="csvFiles" class="upload-btn">📊 Select CSV File(s)</label>
-    <input type="file" id="csvFiles" accept=".csv,text/csv,text/plain" multiple onchange="handleFileSelect(this.files)">
-    <div id="uploadStatus" class="status-msg"></div>
-  </div>
-
-  <!-- CASELOAD ROSTER BAR -->
-  <div class="roster-bar" id="rosterBar" style="display:none;">
-    <label for="studentSelector">👤 Select Student from Roster:</label>
-    <select id="studentSelector" onchange="switchStudent(this.value)"></select>
-  </div>
-
-  <!-- ACTIVE STUDENT DEMOGRAPHICS -->
-  <div class="setup-panel" id="studentDemographicsPanel" style="display:none;">
-    <div class="input-group">
-      <label for="studentFirstName">Student First Name (In Narrative)</label>
-      <input type="text" id="studentFirstName" value="" oninput="updateActiveStudentData()">
-    </div>
-    <div class="input-group">
-      <label for="genderPronouns">Pronouns</label>
-      <select id="genderPronouns" onchange="updateActiveStudentData()">
-        <option value="female">She / Her / Hers</option>
-        <option value="male">He / Him / His</option>
-        <option value="neutral">They / Them / Theirs</option>
+<section class="panel">
+  <h2>2. Select Student and Reporting Period</h2>
+  <div class="controls">
+    <label>
+      Student
+      <select id="student">
+        <option value="">Import a CSV first</option>
       </select>
-    </div>
-    <div class="input-group">
-      <label for="gradeLevel">Grade Level</label>
-      <input type="text" id="gradeLevel" value="" oninput="updateActiveStudentData()">
-    </div>
+    </label>
+
+    <label>
+      Reporting Quarter
+      <select id="period">
+        <option value="P1">Quarter 1</option>
+        <option value="P2">Quarter 2</option>
+        <option value="P3">Quarter 3</option>
+        <option value="P4">Quarter 4</option>
+      </select>
+    </label>
+
+    <label>
+      Current School Year
+      <select id="year"></select>
+    </label>
+  </div>
+  <p id="summary" class="muted"></p>
+</section>
+
+<section class="panel">
+  <div class="row">
+    <h2>3. Predicted IEP Goal Progress</h2>
+    <button id="copyall" class="secondary">
+      Copy All Drafts
+    </button>
   </div>
 
-  <!-- GOALS CONTAINER -->
-  <div id="goalsContainer">
-    <div style="text-align:center; padding:40px; color:#777; border:2px dashed #ccc; border-radius:6px; background:#fafafa;">
-      👈 Select your target period and school year above, then drop CSV file(s) to load your caseload.
-    </div>
-  </div>
+  <p class="note">
+    Suggested statements are projections based on previously
+    documented performance. Edit each statement to reflect
+    your current knowledge, observations, and assessment data.
+  </p>
 
-  <div id="actionButtons" style="display:none; margin-top:20px;">
-    <button class="action-btn export-all" onclick="exportFullCaseloadSummary()">📥 Export All Caseload Narratives (.txt)</button>
-    <button class="action-btn add-custom" onclick="addCustomGoalToActiveStudent()">+ Add Custom Goal Card</button>
+  <div id="results" class="empty">
+    Upload a CSV file to begin.
   </div>
+</section>
 
-</div>
+</main>
 
 <script>
-window.addEventListener('dragover', function(e) { e.preventDefault(); e.stopPropagation(); }, false);
-window.addEventListener('drop', function(e) { e.preventDefault(); e.stopPropagation(); }, false);
+"use strict";
 
-let caseloadData = {};
-let activeStudentName = "";
+const $ = id => document.getElementById(id);
+const reports = new Map();
 
-const dropZone = document.getElementById('dropZone');
-
-dropZone.addEventListener('dragenter', function(e) { e.preventDefault(); e.stopPropagation(); dropZone.classList.add('dragover'); }, false);
-dropZone.addEventListener('dragover', function(e) { e.preventDefault(); e.stopPropagation(); dropZone.classList.add('dragover'); }, false);
-dropZone.addEventListener('dragleave', function(e) { e.preventDefault(); e.stopPropagation(); dropZone.classList.remove('dragover'); }, false);
-
-dropZone.addEventListener('drop', function(e) {
-  e.preventDefault();
-  e.stopPropagation();
-  dropZone.classList.remove('dragover');
-  if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-    handleFileSelect(e.dataTransfer.files);
-  }
-}, false);
-
-function handleFileSelect(fileList) {
-  const files = Array.from(fileList);
-  if (!files || files.length === 0) return;
-  processCsvFiles(files);
+function clean(s) {
+  return String(s || "")
+    .replace(/\r/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
-function handleGlobalSettingsChange() {
-  const targetPeriod = document.getElementById('reportingPeriod').value;
-  const targetYear = document.getElementById('schoolYear').value;
-
-  Object.keys(caseloadData).forEach(sName => {
-    caseloadData[sName].period = targetPeriod;
-    caseloadData[sName].schoolYear = targetYear;
-  });
-
-  if (activeStudentName) {
-    renderActiveStudentCards();
-  }
+function esc(s) {
+  return String(s ?? "").replace(/[&<>"']/g, c => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  }[c]));
 }
 
-function parseNames(rawName) {
-  if (!rawName) return { firstName: "Student", lastName: "", fullName: "Unknown Student" };
-  let clean = rawName.replace(/^["\s]+|["\s]+\$/g, '').trim();
-  let firstName = "";
-  let lastName = "";
-  
-  if (clean.includes(',')) {
-    const parts = clean.split(',');
-    lastName = parts[0].trim();
-    firstName = parts[1] ? parts[1].trim().split(' ')[0] : "Student";
-  } else {
-    const parts = clean.split(' ');
-    firstName = parts[0].trim();
-    lastName = parts.slice(1).join(' ').trim();
+// Parse CSV including quoted multiline fields.
+function parseCSV(src) {
+  src = src.replace(/^\uFEFF/, "");
+  let rows = [], row = [], field = "", quoted = false;
+
+  for (let i = 0; i < src.length; i++) {
+    const c = src[i];
+
+    if (c === '"') {
+      if (quoted && src[i + 1] === '"') {
+        field += '"';
+        i++;
+      } else {
+        quoted = !quoted;
+      }
+    } else if (c === "," && !quoted) {
+      row.push(field);
+      field = "";
+    } else if ((c === "\n" || c === "\r") && !quoted) {
+      if (c === "\r" && src[i + 1] === "\n") i++;
+      row.push(field);
+      if (row.some(v => v.trim())) rows.push(row);
+      row = [];
+      field = "";
+    } else {
+      field += c;
+    }
   }
+
+  row.push(field);
+  if (row.some(v => v.trim())) rows.push(row);
+  return rows;
+}
+
+// Determine school year from report or filename.
+function schoolYear(rows, filename) {
+  for (const row of rows.slice(0, 40)) {
+    const m = row.join(" ").match(
+      /(?:School Year|SY)\s*[: ]?\s*(20\d\d)\s*[-–/]\s*(20\d\d)/i
+    );
+    if (m) return `${m[1]}-${m[2]}`;
+  }
+
+  const m = filename.match(/(20\d\d)\D{0,5}(20\d\d)/);
+  return m ? `${m[1]}-${m[2]}` : null;
+}
+
+// Read the cumulative IEP report format.
+function readReport(src, filename) {
+  const rows = parseCSV(src);
+  const year = schoolYear(rows, filename);
+
+  if (!year) {
+    throw Error(
+      "Cannot determine school year for " + filename
+    );
+  }
+
+  let records = [];
+  let student = "";
+  let period = "";
+  let iep = "";
+  let current = null;
+
+  for (const row of rows) {
+    const cells = row.map(v => v.trim());
+    const first = cells[0] || "";
+
+    if (/^Student\s*$/i.test(first)) {
+      student = cells[1] || "";
+      period = "";
+      iep = "";
+      current = null;
+      continue;
+    }
+
+    const periodCell = cells.find(v =>
+      /^Progress Reporting Period:/i.test(v)
+    );
+
+    if (periodCell) {
+      const match = periodCell.match(
+        /\b(P\s*[1-4]|Q\s*[1-4])\b/i
+      );
+
+      period = match
+        ? "P" + match[1].replace(/\D/g, "")
+        : "Unknown";
+
+      const dates = periodCell.match(
+        /IEP Start Date:\s*([^)]*?)\s*-\s*IEP End Date:\s*([^)]*)/i
+      );
+
+      iep = dates
+        ? clean(dates[1] + " – " + dates[2])
+        : "";
+
+      current = null;
+      continue;
+    }
+
+    const goal = cells.find(v =>
+      /^Measurable Annual Goal:/i.test(v)
+    );
+
+    if (goal && student) {
+      current = {
+        student,
+        year,
+        period,
+        iep,
+        goal: goal.replace(
+          /^Measurable Annual Goal:\s*/i, ""
+        ).trim(),
+        level: "",
+        notes: "",
+        completed: ""
+      };
+
+      records.push(current);
+      continue;
+    }
+
+    if (current) {
+      const completed = cells.find(v =>
+        /^Completed by:/i.test(v)
+      );
+
+      if (completed) {
+        current.completed = completed.replace(
+          /^Completed by:\s*/i, ""
+        );
+
+        const level = cells.find(v =>
+          /^Progress Level:/i.test(v)
+        );
+
+        if (level) {
+          current.level = level.replace(
+            /^Progress Level:\s*/i, ""
+          );
+        }
+        continue;
+      }
+
+      const notes = cells.find(v =>
+        /^Progress Notes:/i.test(v)
+      );
+
+      if (notes) {
+        current.notes = notes.replace(
+          /^Progress Notes:\s*/i, ""
+        );
+      }
+    }
+  }
+
+  if (!records.length) {
+    throw Error(
+      "No recognized IEP goals found in " + filename
+    );
+  }
+
   return {
-    firstName: firstName || "Student",
-    lastName: lastName,
-    fullName: lastName ? `${firstName} ${lastName}` : firstName
+    year,
+    filename,
+    records,
+    students: [...new Set(records.map(r => r.student))]
   };
 }
 
-function getGoalSignature(goalText) {
-  if (!goalText) return "goal_" + Math.random();
-  const clean = goalText.toLowerCase().replace(/[^a-z0-9]/g, '').substring(0, 80);
-  return clean || "goal_" + Math.random();
+// Normalize wording to help identify the same goal
+// across multiple reporting periods.
+function normalizeGoal(s) {
+  return clean(s)
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, "")
+    .replace(
+      /\b(the|a|an|and|or|will|student|with|as|measured|by|on|of|to|in|for|his|her|their)\b/g,
+      " "
+    )
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
-function detectGoalDomainAndTitle(goalText) {
-  if (!goalText) return { title: "Academic Goal", standard: "" };
-  const gLower = goalText.toLowerCase();
-  let title = "";
-  let standard = "";
+// Compare similarity between two goal statements.
+function similarity(a, b) {
+  if (normalizeGoal(a) === normalizeGoal(b)) return 1;
 
-  const stdMatch = goalText.match(/\b([A-Z0-9]+\.[A-Z0-9]+(?:\.[a-z0-9]+)?)\b/i);
-  if (stdMatch && stdMatch[1] && !stdMatch[1].toLowerCase().includes("e.g") && !stdMatch[1].includes("62")) {
-    standard = stdMatch[1];
-  }
+  const words = s => new Set(
+    normalizeGoal(s)
+      .split(" ")
+      .filter(w => w.length > 2)
+  );
 
-  if (gLower.includes("math") || gLower.includes("equation") || gLower.includes("calculator") || gLower.includes("multiplication") || gLower.includes("substitution") || gLower.includes("algebra")) {
-    title = "Mathematics";
-  } else if (gLower.includes("read") || gLower.includes("literary") || gLower.includes("textual evidence") || gLower.includes("comprehen") || gLower.includes("passage")) {
-    title = "Reading Comprehension";
-  } else if (gLower.includes("writ") || gLower.includes("essay") || gLower.includes("paragraph") || gLower.includes("grammar") || gLower.includes("spelling")) {
-    title = "Written Expression";
-  } else if (gLower.includes("speech") || gLower.includes("articulation") || gLower.includes("idiom") || gLower.includes("figurative language")) {
-    title = "Speech & Language";
-  } else if (gLower.includes("binder") || gLower.includes("backpack") || gLower.includes("frustrat") || gLower.includes("organiz") || gLower.includes("direction")) {
-    title = "Study Skills & Behavior";
-  } else {
-    const firstSentence = goalText.replace(/\s+/g, " ").split(/[\n.]/)[0].trim();
-    title = firstSentence.length > 40 ? firstSentence.substring(0, 40) + "..." : firstSentence;
-  }
+  const A = words(a), B = words(b);
+  const intersection = [...A].filter(w => B.has(w)).length;
 
-  return { title, standard };
+  return intersection / Math.max(1, Math.max(A.size, B.size));
 }
 
-function getPronouns(genderKey) {
-  if (genderKey === 'male') {
-    return { subjCap: 'He', subjLower: 'he', pos: 'his', obj: 'him' };
-  } else if (genderKey === 'neutral') {
-    return { subjCap: 'They', subjLower: 'they', pos: 'their', obj: 'them' };
-  } else {
-    return { subjCap: 'She', subjLower: 'she', pos: 'her', obj: 'her' };
-  }
+// Convert historical progress categories to ordinal scores.
+function levelScore(level) {
+  const s = String(level || "").toLowerCase();
+
+  if (/goal met|achieved|mastered/.test(s)) return 4;
+  if (/good progress|significant progress|adequate progress|progressing well/.test(s)) return 3;
+  if (/some progress|progress being made|limited progress/.test(s)) return 2;
+  if (/no progress|not making progress|regression/.test(s)) return 1;
+
+  return null;
 }
 
-async function processCsvFiles(files) {
-  const statusEl = document.getElementById('uploadStatus');
-  statusEl.innerText = `Reading ${files.length} CSV file(s)...`;
-  statusEl.style.color = "#1f4e78";
+// Summarize whether historical progress improved.
+function slopeLabel(history) {
+  const scores = history
+    .map(r => levelScore(r.level))
+    .filter(x => x !== null);
 
-  caseloadData = {};
+  if (scores.length < 2) return "Insufficient trend data";
 
-  try {
-    for (const file of files) {
-      const text = await file.text();
-      if (text.includes("Department of Defense Education Activity") || text.includes("Measurable Annual Goal") || text.includes("Progress Reporting Period:")) {
-        parseDodeaCsvContent(text, file.name);
-      } else {
-        parseColumnCsvContent(text, file.name);
-      }
-    }
+  const change = scores.at(-1) - scores[0];
 
-    const studentList = Object.keys(caseloadData).sort();
-    if (studentList.length > 0) {
-      statusEl.innerText = `✅ Loaded ${files.length} CSV file(s)! Found ${studentList.length} student(s) across all goal domains.`;
-      statusEl.style.color = "#28a745";
-      buildRosterSelector(studentList);
-      switchStudent(studentList[0]);
-    } else {
-      statusEl.innerText = "⚠️ Could not extract student records. Please verify file format.";
-      statusEl.style.color = "#dc3545";
-    }
-  } catch (err) {
-    console.error(err);
-    statusEl.innerText = "❌ Error reading CSV file.";
-    statusEl.style.color = "#dc3545";
-  }
+  if (change >= 1) return "Improving historically";
+  if (change <= -1) return "Declining historically";
+  return "Relatively stable historically";
 }
 
-// DoDEA Cumulative Progress Report Parser
-function parseDodeaCsvContent(text, fileName) {
-  const lines = text.split('\n');
-  let currentStudent = null;
-  let currentGrade = '08';
-  
-  const targetPeriod = document.getElementById('reportingPeriod').value || 'P4';
-  const targetYear = document.getElementById('schoolYear').value || '2025-2026';
+// Estimate a provisional progress category.
+// More recent reports receive greater weight.
+function levelPrediction(history) {
+  const recent = history
+    .slice(-3)
+    .map(r => levelScore(r.level))
+    .filter(x => x !== null);
 
-  let currentYear = targetYear;
-  let currentPeriod = 'P1';
+  if (!recent.length) return "Insufficient information";
 
-  let i = 0;
-  while (i < lines.length) {
-    const line = lines[i];
+  let weightedSum = 0;
+  let weightTotal = 0;
 
-    const ym = line.match(/School Year\s*(\d{4}-\d{4})/i);
-    if (ym && ym[1]) currentYear = ym[1];
-
-    const sm = line.match(/Student\s*,?\s*\"([A-Za-z\s,-]+)\"/i);
-    if (sm && sm[1]) {
-      const rawName = sm[1].trim();
-      if (rawName.includes(',') && !rawName.toLowerCase().includes('progress')) {
-        const nameInfo = parseNames(rawName);
-        const gradeM = line.match(/Grade Level:\s*,*\s*(\d+)/i);
-        currentGrade = (gradeM && gradeM[1]) ? gradeM[1].padStart(2, '0') : '08';
-        
-        currentStudent = nameInfo.fullName;
-        if (!caseloadData[currentStudent]) {
-          caseloadData[currentStudent] = {
-            name: nameInfo.fullName,
-            firstName: nameInfo.firstName,
-            gender: 'female',
-            grade: currentGrade,
-            schoolYear: targetYear,
-            period: targetPeriod,
-            goals: {}
-          };
-        } else {
-          caseloadData[currentStudent].grade = currentGrade;
-        }
-      }
-    }
-
-    const pm = line.match(/Progress Reporting Period:\s*([A-Z0-9\/]+)/i);
-    if (pm && pm[1]) {
-      currentPeriod = pm[1].split('/')[0];
-      const endS = line.match(/,\"([A-Za-z\s,-]+)\"\s*,*\$/);
-      if (endS && endS[1]) {
-        const nameInfo = parseNames(endS[1]);
-        if (caseloadData[nameInfo.fullName]) {
-          currentStudent = nameInfo.fullName;
-        }
-      }
-    }
-
-    if (line.includes("Measurable Annual Goal")) {
-      let goalFull = line;
-      if (line.startsWith('"') && !line.trim().endsWith('"')) {
-        while (i + 1 < lines.length) {
-          i++;
-          goalFull += "\n" + lines[i];
-          if (lines[i].trim().endsWith('"') || lines[i].includes('",,,') || lines[i].includes('",,')) {
-            break;
-          }
-        }
-      }
-      const goalClean = goalFull.replace(/^"|"\$/g, '').replace(/Measurable Annual Goal:?\s*/i, '').trim();
-
-      let progLevel = 'Good progress with minimal assistance';
-      let progNotes = '';
-
-      let j = i + 1;
-      while (j < lines.length && j < i + 15) {
-        const lNext = lines[j];
-        if (lNext.includes("Progress Level:")) {
-          const plM = lNext.match(/Progress Level:\s*([^\",\n]+)/i);
-          if (plM && plM[1]) progLevel = plM[1].trim();
-        } else if (lNext.includes("Progress Notes:")) {
-          let notesFull = lNext;
-          if (lNext.startsWith('"') && !lNext.trim().endsWith('"')) {
-            while (j + 1 < lines.length) {
-              j++;
-              notesFull += "\n" + lines[j];
-              if (lines[j].trim().endsWith('"') || lines[j].includes('",,,') || lines[j].includes('",,')) {
-                break;
-              }
-            }
-          }
-          progNotes = notesFull.replace(/^"|"\$/g, '').replace(/Progress Notes:?\s*/i, '').trim();
-          break;
-        } else if (lNext.includes("Measurable Annual Goal") || lNext.includes("Student")) {
-          break;
-        }
-        j++;
-      }
-
-      if (currentStudent && caseloadData[currentStudent]) {
-        const combinedText = (goalClean + " " + progNotes).toLowerCase();
-        const maleCount = (combinedText.match(/\b(he|his|him)\b/g) || []).length;
-        const femaleCount = (combinedText.match(/\b(she|her|hers)\b/g) || []).length;
-        if (maleCount > femaleCount) {
-          caseloadData[currentStudent].gender = 'male';
-        }
-
-        const { title, standard } = detectGoalDomainAndTitle(goalClean);
-        const goalKey = getGoalSignature(goalClean);
-
-        if (!caseloadData[currentStudent].goals[goalKey]) {
-          caseloadData[currentStudent].goals[goalKey] = {
-            title: title,
-            standard: standard,
-            progressCode: progLevel,
-            notes: progNotes || "Demonstrates consistent progress toward target criteria.",
-            history: []
-          };
-        } else {
-          if (progNotes) caseloadData[currentStudent].goals[goalKey].notes = progNotes;
-          caseloadData[currentStudent].goals[goalKey].progressCode = progLevel;
-        }
-
-        caseloadData[currentStudent].goals[goalKey].history.push({
-          year: currentYear,
-          period: currentPeriod,
-          level: progLevel,
-          comment: progNotes || "Progress reported."
-        });
-      }
-    }
-
-    i++;
-  }
-}
-
-// Standard Column CSV Parser
-function parseColumnCsvContent(text, fileName) {
-  const lines = text.split(/\r?\n/).filter(line => line.trim() !== '');
-  if (lines.length < 2) return;
-
-  const targetPeriod = document.getElementById('reportingPeriod').value || 'P4';
-  const targetYear = document.getElementById('schoolYear').value || '2025-2026';
-
-  function parseCsvLine(line) {
-    const result = [];
-    let cur = '';
-    let inQuotes = false;
-    for (let i = 0; i < line.length; i++) {
-      const c = line[i];
-      if (c === '"') { inQuotes = !inQuotes; }
-      else if (c === ',' && !inQuotes) { result.push(cur.trim()); cur = ''; }
-      else { cur += c; }
-    }
-    result.push(cur.trim());
-    return result;
-  }
-
-  const rawHeaders = parseCsvLine(lines[0]);
-  const headers = rawHeaders.map(h => h.toLowerCase().replace(/[^a-z0-9]/g, ''));
-
-  for (let i = 1; i < lines.length; i++) {
-    const vals = parseCsvLine(lines[i]);
-    if (vals.length === 0 || (vals.length === 1 && vals[0] === '')) continue;
-    
-    const row = {};
-    headers.forEach((h, idx) => { row[h] = vals[idx] || ''; });
-
-    const rawName = row['studentname'] || row['student'] || row['name'] || 'Student';
-    const nameInfo = parseNames(rawName);
-    const studentName = nameInfo.fullName;
-    const grade = row['grade'] || row['gradelevel'] || '08';
-    const schoolYear = row['schoolyear'] || row['year'] || targetYear;
-    const period = row['reportingperiod'] || row['period'] || row['quarter'] || targetPeriod;
-
-    const goalTitle = row['goaltitle'] || row['goal'] || row['domain'] || 'Academic Goal';
-    const standard = row['standard'] || row['ccss'] || '';
-    const progressCode = row['progresscode'] || row['status'] || row['progresslevel'] || 'Good progress with minimal assistance';
-    const notes = row['observations'] || row['notes'] || row['comments'] || 'Demonstrates steady progress toward target goals.';
-
-    if (!caseloadData[studentName]) {
-      caseloadData[studentName] = {
-        name: studentName,
-        firstName: nameInfo.firstName,
-        gender: 'female',
-        grade: grade,
-        schoolYear: targetYear,
-        period: targetPeriod,
-        goals: {}
-      };
-    }
-
-    const goalKey = getGoalSignature(goalTitle + " " + standard);
-    if (!caseloadData[studentName].goals[goalKey]) {
-      caseloadData[studentName].goals[goalKey] = {
-        title: goalTitle,
-        standard: standard,
-        progressCode: progressCode,
-        notes: notes,
-        history: []
-      };
-    }
-
-    caseloadData[studentName].goals[goalKey].history.push({
-      year: schoolYear,
-      period: period,
-      comment: notes
-    });
-  }
-}
-
-function buildRosterSelector(studentList) {
-  const selectEl = document.getElementById('studentSelector');
-  selectEl.innerHTML = "";
-  
-  studentList.forEach(sName => {
-    const opt = document.createElement('option');
-    opt.value = sName;
-    opt.innerText = `👤 ${sName} (Grade ${caseloadData[sName].grade})`;
-    selectEl.appendChild(opt);
+  recent.forEach((score, i) => {
+    const weight = i + 1;
+    weightedSum += score * weight;
+    weightTotal += weight;
   });
 
-  document.getElementById('rosterBar').style.display = 'flex';
-  document.getElementById('studentDemographicsPanel').style.display = 'grid';
-  document.getElementById('actionButtons').style.display = 'block';
+  const score = Math.max(
+    1, Math.min(4, Math.round(weightedSum / weightTotal))
+  );
+
+  return {
+    1: "No progress or regression (historical category)",
+    2: "Some progress being made toward goal",
+    3: "Good progress with minimal assistance",
+    4: "Goal met (historical category)"
+  }[score];
 }
 
-function switchStudent(studentName) {
-  activeStudentName = studentName;
-  const student = caseloadData[studentName];
-  if (!student) return;
+// Extract a manageable portion of a previous note.
+function usableExcerpt(note) {
+  const s = clean(note);
+  if (!s) return "";
 
-  document.getElementById('studentFirstName').value = student.firstName || student.name.split(' ')[0];
-  document.getElementById('genderPronouns').value = student.gender || 'female';
-  document.getElementById('gradeLevel').value = student.grade;
-
-  renderActiveStudentCards();
+  const first = s.split(/(?<=[.!?])\s+/)[0] || s;
+  return first.length > 260
+    ? first.slice(0, 257) + "…"
+    : first;
 }
 
-function renderActiveStudentCards() {
-  const container = document.getElementById('goalsContainer');
-  container.innerHTML = "";
+// Produce a shorter description of the goal focus.
+function getFocus(goal) {
+  let s = clean(goal)
+    .replace(
+      /^by (?:the )?(?:next )?(?:annual (?:iep|review date)|end of [^,]+)[, ]*/i,
+      ""
+    )
+    .replace(/^the student will\s+/i, "")
+    .replace(/^will\s+/i, "");
 
-  const student = caseloadData[activeStudentName];
-  if (!student || !student.goals) return;
+  s = s.split(/\s+(?:as measured by|as evidenced by)\s+/i)[0];
 
-  const goalKeys = Object.keys(student.goals);
-  if (goalKeys.length === 0) {
-    container.innerHTML = `<div style="text-align:center; padding:30px; color:#777;">No goals extracted for ${student.name}. Click "+ Add Custom Goal Card" to create one.</div>`;
+  return s.length > 195 ? s.slice(0, 192) + "…" : s;
+}
+
+// Generate an editable narrative suggestion.
+function buildDraft(goal, history, matchKind, year, period) {
+  if (!history.length) {
+    return (
+      "Progress toward this goal requires review of current " +
+      "student work and observations. No sufficiently close " +
+      "historical match was found. Enter a goal-specific update " +
+      "based on current " + period + " evidence."
+    );
+  }
+
+  const recent = history.at(-1);
+  const predicted = levelPrediction(history);
+  const trend = slopeLabel(history);
+  const excerpt = usableExcerpt(recent.notes);
+
+  let movement;
+
+  if (trend === "Improving historically") {
+    movement = "continuing to build on previously documented gains";
+  } else if (trend === "Declining historically") {
+    movement = "requiring continued support in areas where previous reports indicated difficulty";
+  } else {
+    movement = "working toward greater consistency and independence";
+  }
+
+  let draft =
+    "Based on previous reporting, the student appears likely " +
+    "to be " + movement + " in " +
+    getFocus(goal).replace(/[.]+$/, "") + ".";
+
+  if (excerpt) {
+    draft += " Previous reporting noted: " + excerpt;
+  }
+
+  if (predicted !== "Insufficient information") {
+    draft +=
+      ' A provisional progress level of "' + predicted +
+      '" may be appropriate if supported by current observations ' +
+      "and student work.";
+  }
+
+  if (matchKind === "similar") {
+    draft +=
+      " The earlier goal wording differed, so the relationship " +
+      "between these goals should be confirmed.";
+  }
+
+  return draft.replace(/\s+/g, " ").trim();
+}
+
+// Chronological ordering.
+function sortRecord(a, b) {
+  return parseInt(a.year) - parseInt(b.year) ||
+    parseInt(a.period.slice(1) || 0) -
+    parseInt(b.period.slice(1) || 0);
+}
+
+// Find newest versions of goals in a given selection.
+function uniqueLatest(records) {
+  const map = new Map();
+
+  for (const record of [...records].sort(sortRecord)) {
+    map.set(normalizeGoal(record.goal), record);
+  }
+
+  return [...map.values()];
+}
+
+// Find earlier reports that match a goal.
+function findHistory(goal, candidates) {
+  const exact = candidates.filter(r =>
+    normalizeGoal(r.goal) === normalizeGoal(goal.goal) &&
+    r !== goal
+  );
+
+  if (exact.length) {
+    return { history: exact.sort(sortRecord), kind: "exact" };
+  }
+
+  const similar = candidates
+    .map(r => ({ ...r, score: similarity(goal.goal, r.goal) }))
+    .filter(r => r.score >= 0.68)
+    .sort((a, b) => b.score - a.score);
+
+  if (similar.length) {
+    const top = similar[0].score;
+    return {
+      history: similar
+        .filter(r => r.score >= Math.max(0.68, top - 0.06))
+        .sort(sortRecord),
+      kind: "similar"
+    };
+  }
+
+  return { history: [], kind: "none" };
+}
+
+// Populate student and school-year dropdowns.
+function syncSelects() {
+  const students = [...new Set(
+    [...reports.values()].flatMap(r => r.students)
+  )].sort((a, b) => a.localeCompare(b));
+
+  const previousStudent = $("student").value;
+
+  $("student").innerHTML =
+    '<option value="">Select a student…</option>' +
+    students.map(s =>
+      `<option value="${esc(s)}">${esc(s)}</option>`
+    ).join("");
+
+  if (students.includes(previousStudent)) {
+    $("student").value = previousStudent;
+  } else if (students.length === 1) {
+    $("student").value = students[0];
+  }
+
+  const years = [...reports.keys()].sort();
+  const lastYear = years.length
+    ? Math.max(...years.map(y => parseInt(y)))
+    : 2025;
+
+  const target = `${lastYear + 1}-${lastYear + 2}`;
+  const options = [...new Set([...years, target])].sort();
+  const previousYear = $("year").value;
+
+  $("year").innerHTML = options.map(y =>
+    `<option value="${y}">${y}${
+      reports.has(y) ? " (uploaded)" : " (projection)"
+    }</option>`
+  ).join("");
+
+  $("year").value = options.includes(previousYear)
+    ? previousYear : target;
+
+  $("filelist").innerHTML = [...reports.values()].map(r =>
+    `<span class="filechip">${esc(r.year)} · ${esc(r.filename)}
+     · ${r.students.length} students
+     · ${r.records.length} entries</span>`
+  ).join("");
+
+  render();
+}
+
+// Display selected student's goals and predictions.
+function render() {
+  const student = $("student").value;
+  const year = $("year").value;
+  const period = $("period").value;
+  const output = $("results");
+
+  if (!student || !year) {
+    output.className = "empty";
+    output.textContent = "Select a student to view predictions.";
+    $("summary").textContent = "";
     return;
   }
 
-  goalKeys.forEach((key, idx) => {
-    const goal = student.goals[key];
-    const card = document.createElement('div');
-    card.className = "goal-card";
-    const cardId = `card_${idx}`;
+  const all = [...reports.values()]
+    .flatMap(r => r.records)
+    .filter(r => r.student === student);
 
-    let historyHtml = "";
-    if (goal.history && goal.history.length > 0) {
-      const historyItemsHtml = goal.history.map(h => `• <strong>[${h.year} - ${h.period}] (${h.level || 'Reported'}):</strong> ${h.comment}`).join('<br>');
-      historyHtml = `<div class="timeline-box">
-        <div class="timeline-title">📜 Cumulative Progress History across Periods:</div>
-        ${historyItemsHtml}
-      </div>`;
-    }
+  const eligible = all.filter(r => r.year <= year)
+    .sort(sortRecord);
 
-    card.innerHTML = `
-      <div class="goal-header">
-        <span>${idx + 1}. <input type="text" value="${goal.title}" style="font-weight:bold; font-size:1em; color:#1f4e78; border:none; border-bottom:1px solid #ccc; width:280px;" oninput="caseloadData['${activeStudentName}'].goals['${key}'].title=this.value; renderActiveNarrative('${key}', '${cardId}')"></span>
-        <span class="badge">Standard: <input type="text" value="${goal.standard}" style="border:none; background:transparent; font-weight:bold; color:#1f4e78; width:100px;" oninput="caseloadData['${activeStudentName}'].goals['${key}'].standard=this.value; renderActiveNarrative('${key}', '${cardId}')"></span>
-      </div>
-      ${historyHtml}
-      <div class="grid-2">
-        <div class="input-group">
-          <label>Current Status / Progress Level</label>
-          <select onchange="caseloadData['${activeStudentName}'].goals['${key}'].progressCode=this.value; renderActiveNarrative('${key}', '${cardId}')">
-            <option value="Good progress with minimal assistance" ${goal.progressCode.includes('Good') ? 'selected' : ''}>Good progress with minimal assistance</option>
-            <option value="Some progress being made toward goal" ${goal.progressCode.includes('Some') ? 'selected' : ''}>Some progress being made toward goal</option>
-            <option value="Partially Mastered" ${goal.progressCode.includes('Partially') ? 'selected' : ''}>Partially Mastered</option>
-            <option value="Mastered" ${goal.progressCode.includes('Mastered') && !goal.progressCode.includes('Partially') ? 'selected' : ''}>Mastered</option>
-          </select>
-        </div>
-        <div class="input-group">
-          <label>Current Period Observations</label>
-          <input type="text" id="notes_${cardId}" value="${goal.notes}" oninput="caseloadData['${activeStudentName}'].goals['${key}'].notes=this.value; renderActiveNarrative('${key}', '${cardId}')">
-        </div>
-      </div>
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
-        <span style="font-weight:bold; color:#1f4e78; font-size:0.9em;">EXTRAPOLATED PROGRESS NARRATIVE:</span>
-        <button class="copy-btn" onclick="copyText(this, 'box_${cardId}')">Copy Block</button>
-      </div>
-      <div class="copy-box" id="box_${cardId}"></div>
-    `;
+  const current = eligible.filter(r =>
+    r.year === year &&
+    parseInt(r.period.slice(1) || 0) <
+      parseInt(period.slice(1))
+  );
 
-    container.appendChild(card);
-    renderActiveNarrative(key, cardId);
-  });
-}
+  // Prefer goals from the latest available report.
+  const latestYear = current.length
+    ? year
+    : eligible.at(-1)?.year;
 
-function generateTrendProse(goal, firstName, pronouns, period, year, currentNotes) {
-  const p = pronouns;
-  const stdText = goal.standard ? ` (${goal.standard})` : '';
-  const history = goal.history || [];
-  
-  // Extract historical levels
-  const levels = history.map(h => h.level || '');
-  const latestLevel = goal.progressCode || (levels.length > 0 ? levels[levels.length - 1] : '');
-  const earlierLevels = levels.slice(0, -1);
+  const latest = current.length
+    ? current
+    : eligible.filter(r => r.year === latestYear);
 
-  let trendTrajectory = "";
-  const pc = latestLevel.toLowerCase();
-
-  if (pc.includes('mastered') && !pc.includes('partially')) {
-    trendTrajectory = `has mastered ${p.pos} ${goal.title} goal${stdText} following consistent skill acquisition across reporting periods`;
-  } else if (pc.includes('partially')) {
-    trendTrajectory = `has partially mastered ${p.pos} ${goal.title} goal${stdText}, demonstrating significant growth over prior reporting periods`;
-  } else if (pc.includes('good')) {
-    const hadEarlierSome = earlierLevels.some(l => l.toLowerCase().includes('some') || l.toLowerCase().includes('ongoing'));
-    if (hadEarlierSome) {
-      trendTrajectory = `has demonstrated steady momentum toward ${p.pos} ${goal.title} goal${stdText}, building upon foundational practice to make good progress with minimal assistance`;
-    } else {
-      trendTrajectory = `continues to show consistent performance and good progress with minimal assistance toward ${p.pos} ${goal.title} goal${stdText}`;
-    }
-  } else if (pc.includes('some')) {
-    trendTrajectory = `is making steady progress toward ${p.pos} ${goal.title} goal${stdText} with structured instructional support`;
-  } else {
-    trendTrajectory = `continues to make progress toward ${p.pos} ${goal.title} goal${stdText}`;
+  if (!latest.length) {
+    output.className = "empty";
+    output.textContent = "No goal records found.";
+    return;
   }
 
-  return `During the ${period} reporting period (${year}), ${firstName} ${trendTrajectory}. ${currentNotes}`;
-}
+  const goals = uniqueLatest(latest);
+  let html = "";
 
-function renderActiveNarrative(key, cardId) {
-  const student = caseloadData[activeStudentName];
-  if (!student || !student.goals[key]) return;
+  for (let j = 0; j < goals.length; j++) {
+    const goal = goals[j];
 
-  const goal = student.goals[key];
-  const firstNameInput = document.getElementById('studentFirstName').value || 'The student';
-  const firstName = firstNameInput.trim().split(' ')[0];
-  const genderKey = document.getElementById('genderPronouns').value || 'female';
-  const p = getPronouns(genderKey);
+    const earlier = eligible.filter(r =>
+      r !== goal &&
+      (
+        parseInt(r.year) < parseInt(year) ||
+        (
+          r.year === year &&
+          parseInt(r.period.slice(1) || 0) <
+            parseInt(period.slice(1))
+        )
+      )
+    );
 
-  const period = document.getElementById('reportingPeriod').value || 'P4';
-  const year = document.getElementById('schoolYear').value || '2025-2026';
-  const currentNotes = document.getElementById(`notes_${cardId}`) ? document.getElementById(`notes_${cardId}`).value : goal.notes;
+    const match = findHistory(goal, earlier);
+    const history = match.history;
+    const predicted = levelPrediction(history);
+    const trend = slopeLabel(history);
 
-  const narrative = generateTrendProse(goal, firstName, p, period, year, currentNotes);
+    const id = "draft" + j;
 
-  const box = document.getElementById(`box_${cardId}`);
-  if (box) box.innerText = narrative;
-}
+    const matchLabel = match.kind === "exact"
+      ? "Goal text matched"
+      : match.kind === "similar"
+      ? "Similar earlier goal"
+      : "No historical match";
 
-function updateActiveStudentData() {
-  if (!activeStudentName || !caseloadData[activeStudentName]) return;
-  caseloadData[activeStudentName].firstName = document.getElementById('studentFirstName').value;
-  caseloadData[activeStudentName].gender = document.getElementById('genderPronouns').value;
-  caseloadData[activeStudentName].grade = document.getElementById('gradeLevel').value;
+    html += `
+      <article class="goal">
+        <div class="row">
+          <h3>Goal ${j + 1}</h3>
+          <span class="tag ${
+            match.kind === "exact" ? "" : "warn"
+          }">${matchLabel}</span>
+        </div>
 
-  renderActiveStudentCards();
-}
+        <div class="goaltext">${esc(goal.goal)}</div>
 
-function addCustomGoalToActiveStudent() {
-  if (!activeStudentName || !caseloadData[activeStudentName]) return;
-  const customKey = `custom_${Math.random().toString(36).substring(2, 9)}`;
-  caseloadData[activeStudentName].goals[customKey] = {
-    title: "New Custom Goal",
-    standard: "Goal Standard",
-    history: [],
-    progressCode: "Good progress with minimal assistance",
-    notes: "Demonstrates consistent effort; requires visual scaffolds to complete tasks."
-  };
-  renderActiveStudentCards();
-}
+        <p><strong>Suggested progress level:</strong>
+          ${esc(predicted)}</p>
+        <p><strong>Historical trend:</strong>
+          ${esc(trend)}</p>
 
-function exportFullCaseloadSummary() {
-  let fullExportText = "===================================================\n";
-  fullExportText += "CASELOAD IEP PROGRESS REPORT NARRATIVES EXPORT\n";
-  fullExportText += `Generated on: ${new Date().toLocaleDateString()}\n`;
-  fullExportText += "===================================================\n\n";
+        <details class="history">
+          <summary>
+            View historical evidence (${history.length} entries)
+          </summary>
+          ${history.length
+            ? history.map(h => `
+              <details>
+                <summary>
+                  ${esc(h.year)} ${esc(h.period)}
+                  — ${esc(h.level || "No level recorded")}
+                </summary>
+                <p>${esc(h.notes || "No narrative note")}</p>
+                <p class="muted">${esc(h.completed)}</p>
+              </details>
+            `).join("")
+            : '<p class="muted">No matching history found.</p>'
+          }
+        </details>
 
-  const period = document.getElementById('reportingPeriod').value || 'P4';
-  const year = document.getElementById('schoolYear').value || '2025-2026';
+        <div class="prediction">
+          <label for="${id}">
+            Editable Predicted Progress Statement
+          </label>
+          <textarea id="${id}" class="draft"></textarea>
 
-  Object.keys(caseloadData).forEach(sName => {
-    const student = caseloadData[sName];
-    const p = getPronouns(student.gender || 'female');
-    const firstName = (student.firstName || student.name.split(' ')[0]).trim();
+          <div class="row">
+            <button class="copyone" data-id="${id}">
+              Copy Statement
+            </button>
+            <button class="secondary resetone" data-id="${id}">
+              Restore Suggestion
+            </button>
+          </div>
+          <p class="muted">
+            Review and revise using current student evidence.
+          </p>
+        </div>
+      </article>
+    `;
+  }
 
-    fullExportText += `---------------------------------------------------\n`;
-    fullExportText += `STUDENT: ${student.name} | GRADE: ${student.grade} | YEAR: ${year}\n`;
-    fullExportText += `TARGET PERIOD: ${period}\n`;
-    fullExportText += `---------------------------------------------------\n\n`;
+  output.className = "";
+  output.innerHTML = html;
 
-    Object.keys(student.goals).forEach((gKey, idx) => {
-      const goal = student.goals[gKey];
-      const narrative = generateTrendProse(goal, firstName, p, period, year, goal.notes);
+  // Set the actual textarea values after rendering.
+  goals.forEach((goal, j) => {
+    const earlier = eligible.filter(r =>
+      r !== goal &&
+      (
+        parseInt(r.year) < parseInt(year) ||
+        (
+          r.year === year &&
+          parseInt(r.period.slice(1) || 0) <
+            parseInt(period.slice(1))
+        )
+      )
+    );
 
-      fullExportText += `[GOAL ${idx + 1}: ${goal.title.toUpperCase()}]\n`;
-      fullExportText += `${narrative}\n\n`;
-    });
-    fullExportText += "\n";
+    const match = findHistory(goal, earlier);
+    const draft = buildDraft(
+      goal.goal, match.history, match.kind, year, period
+    );
+
+    $("draft" + j).value = draft;
+    $("draft" + j).dataset.suggestion = draft;
   });
 
-  const blob = new Blob([fullExportText], { type: 'text/plain' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `Caseload_Progress_Reports_${period}.txt`;
-  a.click();
+  $("summary").textContent =
+    `${goals.length} goal(s) displayed. ` +
+    `${all.length} historical entries found for this student.`;
 }
 
-function copyText(button, elementId) {
-  const text = document.getElementById(elementId).innerText;
-  navigator.clipboard.writeText(text).then(() => {
-    button.innerText = 'Copied!';
-    button.classList.add('copied');
+// Copy to clipboard.
+async function copyText(value, button) {
+  try {
+    await navigator.clipboard.writeText(value);
+    const original = button.textContent;
+    button.textContent = "Copied!";
     setTimeout(() => {
-      button.innerText = 'Copy Block';
-      button.classList.remove('copied');
-    }, 2000);
-  });
+      button.textContent = original;
+    }, 1500);
+  } catch (err) {
+    const temp = document.createElement("textarea");
+    temp.value = value;
+    document.body.appendChild(temp);
+    temp.select();
+    document.execCommand("copy");
+    temp.remove();
+  }
 }
-</script>
 
+// Import selected CSV files.
+$("import").addEventListener("click", async () => {
+  const files = [...$("files").files];
+
+  if (!files.length) {
+    $("importStatus").textContent =
+      "Please select one or more CSV files.";
+    return;
+  }
+
+  const success = [];
+  const failures = [];
+
+  for (const file of files) {
+    try {
+      const report = readReport(await file.text(), file.name);
+      reports.set(report.year, report);
+      success.push(
+        `${file.name}: ${report.records.length} goal entries`
+      );
+    } catch (err) {
+      failures.push(err.message);
+    }
+  }
+
+  $("importStatus").textContent =
+    [...success, ...failures].join(" | ");
+
+  $("files").value = "";
+  syncSelects();
+});
+
+// Clear imported reports.
+$("clear").addEventListener("click", () => {
+  reports.clear();
+  $("filelist").innerHTML = "";
+  $("importStatus").textContent = "Data cleared.";
+  syncSelects();
+});
+
+// Update results when selections change.
+["student", "year", "period"].forEach(id => {
+  $(id).addEventListener("change", render);
+});
+
+// Copy and restore individual predictions.
+$("results").addEventListener("click", event => {
+  const button = event.target.closest("button");
+  if (!button) return;
+
+  const id = button.dataset.id;
+
+  if (button.classList.contains("copyone")) {
+    copyText($(id).value, button);
+  }
+
+  if (button.classList.contains("resetone")) {
+    $(id).value = $(id).dataset.suggestion;
+  }
+});
+
+// Copy every edited goal draft together.
+$("copyall").addEventListener("click", () => {
+  const text = [...document.querySelectorAll(".goal")]
+    .map((element, i) => {
+      const goal = element.querySelector(".goaltext").textContent;
+      const draft = element.querySelector("textarea").value;
+
+      return `GOAL ${i + 1}\n${goal}\n\n${draft}`;
+    })
+    .join("\n\n--------------------\n\n");
+
+  if (text) copyText(text, $("copyall"));
+});
+
+syncSelects();
+</script>
 </body>
 </html>
